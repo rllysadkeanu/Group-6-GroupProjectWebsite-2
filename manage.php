@@ -1,6 +1,7 @@
 <?php
 
 session_start();
+
 require_once("settings.php");
 
 if(!isset($_SESSION["admin"]))
@@ -8,8 +9,6 @@ if(!isset($_SESSION["admin"]))
     header("Location: login.php");
     exit();
 }
-
-/* Delete by Job Reference */
 
 if(isset($_POST["delete_job"]))
 {
@@ -25,12 +24,14 @@ if(isset($_POST["delete_job"]))
     );
 }
 
-/* Update Status */
-
 if(isset($_POST["update_status"]))
 {
     $eoi_id = (int)$_POST["eoi_id"];
-    $status = $_POST["status"];
+
+    $status = mysqli_real_escape_string(
+        $conn,
+        $_POST["status"]
+    );
 
     mysqli_query(
         $conn,
@@ -40,11 +41,9 @@ if(isset($_POST["update_status"]))
     );
 }
 
-/* Sorting */
-
 $sort = $_GET["sort"] ?? "eoi_id";
 
-$allowed =
+$allowed_sorts =
 [
     "eoi_id",
     "job_ref",
@@ -53,12 +52,10 @@ $allowed =
     "status"
 ];
 
-if(!in_array($sort, $allowed))
+if(!in_array($sort, $allowed_sorts))
 {
     $sort = "eoi_id";
 }
-
-/* Search */
 
 $query =
 "SELECT *
@@ -67,8 +64,7 @@ $query =
 
 if(isset($_POST["search_job"]))
 {
-    $job_ref =
-    mysqli_real_escape_string(
+    $job_ref = mysqli_real_escape_string(
         $conn,
         $_POST["job_ref"]
     );
@@ -81,8 +77,7 @@ if(isset($_POST["search_job"]))
 
 if(isset($_POST["search_name"]))
 {
-    $name =
-    mysqli_real_escape_string(
+    $name = mysqli_real_escape_string(
         $conn,
         $_POST["name"]
     );
@@ -91,7 +86,7 @@ if(isset($_POST["search_name"]))
     "SELECT *
      FROM eoi
      WHERE first_name LIKE '%$name%'
-        OR last_name LIKE '%$name%'";
+     OR last_name LIKE '%$name%'";
 }
 
 $result = mysqli_query($conn, $query);
@@ -99,10 +94,11 @@ $result = mysqli_query($conn, $query);
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Manage EOIs</title>
-    <link rel="stylesheet" href="styles/unified.css">
+<meta charset="UTF-8">
+<title>Manage EOIs</title>
+<link rel="stylesheet" href="styles/unified.css">
 </head>
 
 <body>
@@ -115,9 +111,9 @@ $result = mysqli_query($conn, $query);
 <h2>Manage EOIs</h2>
 
 <p>
-Sort:
+Sort Results:
 <a href="?sort=eoi_id">EOI ID</a> |
-<a href="?sort=job_ref">Job Ref</a> |
+<a href="?sort=job_ref">Job Reference</a> |
 <a href="?sort=first_name">First Name</a> |
 <a href="?sort=last_name">Last Name</a> |
 <a href="?sort=status">Status</a>
@@ -126,31 +122,46 @@ Sort:
 <hr>
 
 <form method="post">
-    Search by Job Reference:
-    <input type="text" name="job_ref">
-    <button type="submit" name="search_job">
-        Search
-    </button>
+
+<label>Search by Job Reference:</label>
+
+<input type="text" name="job_ref">
+
+<input
+type="submit"
+name="search_job"
+value="Search">
+
 </form>
 
 <br>
 
 <form method="post">
-    Search by Applicant Name:
-    <input type="text" name="name">
-    <button type="submit" name="search_name">
-        Search
-    </button>
+
+<label>Search by Applicant Name:</label>
+
+<input type="text" name="name">
+
+<input
+type="submit"
+name="search_name"
+value="Search">
+
 </form>
 
 <br>
 
 <form method="post">
-    Delete All EOIs by Job Reference:
-    <input type="text" name="job_ref">
-    <button type="submit" name="delete_job">
-        Delete
-    </button>
+
+<label>Delete EOIs by Job Reference:</label>
+
+<input type="text" name="job_ref">
+
+<input
+type="submit"
+name="delete_job"
+value="Delete">
+
 </form>
 
 <br>
@@ -158,36 +169,40 @@ Sort:
 <table border="1" cellpadding="8">
 
 <tr>
-    <th>ID</th>
-    <th>Job Ref</th>
-    <th>Name</th>
-    <th>Email</th>
-    <th>Phone</th>
-    <th>Status</th>
-    <th>Change Status</th>
+<th>EOI ID</th>
+<th>Job Ref</th>
+<th>Name</th>
+<th>Email</th>
+<th>Phone</th>
+<th>Status</th>
+<th>Update Status</th>
 </tr>
 
-<?php while($row = mysqli_fetch_assoc($result)) { ?>
+<?php
+
+while($row = mysqli_fetch_assoc($result))
+{
+?>
 
 <tr>
 
 <td><?php echo $row["eoi_id"]; ?></td>
 
-<td><?php echo $row["job_ref"]; ?></td>
+<td><?php echo htmlspecialchars($row["job_ref"]); ?></td>
 
 <td>
 <?php
-echo $row["first_name"] .
-" " .
-$row["last_name"];
+echo htmlspecialchars(
+    $row["first_name"] . " " . $row["last_name"]
+);
 ?>
 </td>
 
-<td><?php echo $row["email"]; ?></td>
+<td><?php echo htmlspecialchars($row["email"]); ?></td>
 
-<td><?php echo $row["phone"]; ?></td>
+<td><?php echo htmlspecialchars($row["phone"]); ?></td>
 
-<td><?php echo $row["status"]; ?></td>
+<td><?php echo htmlspecialchars($row["status"]); ?></td>
 
 <td>
 
@@ -199,16 +214,17 @@ name="eoi_id"
 value="<?php echo $row["eoi_id"]; ?>">
 
 <select name="status">
-    <option value="New">New</option>
-    <option value="Current">Current</option>
-    <option value="Final">Final</option>
+
+<option value="New">New</option>
+<option value="Current">Current</option>
+<option value="Final">Final</option>
+
 </select>
 
-<button
+<input
 type="submit"
-name="update_status">
-Update
-</button>
+name="update_status"
+value="Update">
 
 </form>
 
@@ -216,7 +232,9 @@ Update
 
 </tr>
 
-<?php } ?>
+<?php
+}
+?>
 
 </table>
 

@@ -8,24 +8,27 @@ if ($_SERVER["REQUEST_METHOD"] != "POST")
     exit();
 }
 
-function clean($data)
+function sanitise_input($data)
 {
-    return htmlspecialchars(trim(stripslashes($data)));
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+
+    return $data;
 }
 
-$job_ref = clean($_POST["job_reference_number"]);
-$first_name = clean($_POST["first_name"]);
-$last_name = clean($_POST["last_name"]);
-$date_of_birth = clean($_POST["date_of_birth"]);
-$gender = clean($_POST["gender"]);
-
-$street_address = clean($_POST["street_address"]);
-$suburb_town = clean($_POST["suburb_town"]);
-$state = clean($_POST["state"]);
-$postcode = clean($_POST["postcode"]);
-
-$email = clean($_POST["email"]);
-$phone = clean($_POST["phone_number"]);
+$job_ref = sanitise_input($_POST["job_reference_number"] ?? "");
+$first_name = sanitise_input($_POST["first_name"] ?? "");
+$last_name = sanitise_input($_POST["last_name"] ?? "");
+$date_of_birth = sanitise_input($_POST["date_of_birth"] ?? "");
+$gender = sanitise_input($_POST["gender"] ?? "");
+$street_address = sanitise_input($_POST["street_address"] ?? "");
+$suburb_town = sanitise_input($_POST["suburb_town"] ?? "");
+$state = sanitise_input($_POST["state"] ?? "");
+$postcode = sanitise_input($_POST["postcode"] ?? "");
+$email = sanitise_input($_POST["email"] ?? "");
+$phone = sanitise_input($_POST["phone_number"] ?? "");
+$other_skill = sanitise_input($_POST["other_skill"] ?? "");
 
 $skills = "";
 
@@ -34,70 +37,78 @@ if(isset($_POST["skill"]))
     $skills = implode(", ", $_POST["skill"]);
 }
 
-$other_skill = clean($_POST["other_skill"] ?? "");
-
-$error = "";
-
-/* Validation */
+$errors = array();
 
 if(!preg_match("/^[A-Za-z0-9]{5}$/", $job_ref))
 {
-    $error .= "Invalid Job Reference Number<br>";
+    $errors[] = "Invalid Job Reference Number";
 }
 
 if(!preg_match("/^[A-Za-z]{1,20}$/", $first_name))
 {
-    $error .= "Invalid First Name<br>";
+    $errors[] = "Invalid First Name";
 }
 
 if(!preg_match("/^[A-Za-z]{1,20}$/", $last_name))
 {
-    $error .= "Invalid Last Name<br>";
+    $errors[] = "Invalid Last Name";
 }
 
 if(!filter_var($email, FILTER_VALIDATE_EMAIL))
 {
-    $error .= "Invalid Email Address<br>";
+    $errors[] = "Invalid Email Address";
 }
 
 if(!preg_match("/^[0-9]{8,12}$/", $phone))
 {
-    $error .= "Invalid Phone Number<br>";
+    $errors[] = "Invalid Phone Number";
 }
 
 if(!preg_match("/^[0-9]{4}$/", $postcode))
 {
-    $error .= "Invalid Postcode<br>";
+    $errors[] = "Invalid Postcode";
 }
 
-if($error != "")
+if(count($errors) > 0)
 {
-    die($error);
+    echo "<h2>Errors Found</h2>";
+
+    foreach($errors as $error)
+    {
+        echo "<p>$error</p>";
+    }
+
+    echo '<p><a href="apply.php">Return to Application Form</a></p>';
+
+    exit();
 }
 
-/* Insert Application */
+$sql = "
+INSERT INTO eoi
+(
+    job_ref,
+    first_name,
+    last_name,
+    email,
+    phone,
+    date_of_birth,
+    gender,
+    street_address,
+    suburb_town,
+    state,
+    postcode,
+    skills,
+    other_skill
+)
+VALUES
+(
+    ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?,
+    ?, ?, ?
+)
+";
 
-$stmt = mysqli_prepare(
-    $conn,
-    "INSERT INTO eoi
-    (
-        job_ref,
-        first_name,
-        last_name,
-        date_of_birth,
-        gender,
-        street_address,
-        suburb_town,
-        state,
-        postcode,
-        email,
-        phone,
-        skills,
-        other_skill
-    )
-    VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-);
+$stmt = mysqli_prepare($conn, $sql);
 
 mysqli_stmt_bind_param(
     $stmt,
@@ -105,14 +116,14 @@ mysqli_stmt_bind_param(
     $job_ref,
     $first_name,
     $last_name,
+    $email,
+    $phone,
     $date_of_birth,
     $gender,
     $street_address,
     $suburb_town,
     $state,
     $postcode,
-    $email,
-    $phone,
     $skills,
     $other_skill
 );
@@ -121,27 +132,34 @@ mysqli_stmt_execute($stmt);
 
 $eoi_number = mysqli_insert_id($conn);
 
+mysqli_stmt_close($stmt);
+mysqli_close($conn);
+
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Application Submitted</title>
-    <link rel="stylesheet" href="styles/unified.css">
+<meta charset="UTF-8">
+<title>Application Submitted</title>
+<link rel="stylesheet" href="styles/unified.css">
 </head>
+
 <body>
 
 <?php include 'header.inc'; ?>
 
 <div class="form-container">
 
-    <h2>Application Submitted Successfully</h2>
+<h2>Application Submitted Successfully</h2>
 
-    <p>Your EOI Number is:</p>
+<p>Your EOI Number is:</p>
 
-    <h3><?php echo $eoi_number; ?></h3>
+<h3><?php echo $eoi_number; ?></h3>
 
-    <a href="index.php">Return Home</a>
+<p>
+<a href="index.php">Return to Home Page</a>
+</p>
 
 </div>
 
