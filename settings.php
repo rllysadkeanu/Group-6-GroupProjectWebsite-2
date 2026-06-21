@@ -1,9 +1,12 @@
 <?php
-    $host = "localhost";
-    $user = "root";
-    $pwd = "";
-    // You will update this database name later when you create your MySQL database
-    $sql_db = "your_database_name"; 
-    
-    $conn = @mysqli_connect($host, $user, $pwd, $sql_db);
+$host = "localhost";
+$user = "root";
+$pwd = ""; // Default XAMPP has no password
+$sql_db = "eoi_db"; // Make sure to create this database in phpMyAdmin
+
+$conn = @mysqli_connect($host, $user, $pwd, $sql_db);
+
+if (!$conn) {
+    die("Database connection failed: " . mysqli_connect_error());
+}
 ?>
