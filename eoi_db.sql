@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 21, 2026 at 04:12 PM
+-- Generation Time: Jun 21, 2026 at 04:22 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -33,6 +33,16 @@ CREATE TABLE `about` (
   `contribution_p1` text NOT NULL,
   `contribution_p2` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `about`
+--
+
+INSERT INTO `about` (`id`, `member_name`, `contribution_p1`, `contribution_p2`) VALUES
+(1, 'Lye Wey Ming', 'Designed homepage UI and layout', 'Implemented database integration'),
+(2, 'Chan Bak Onn', 'Implemented CSS styling and responsiveness', 'Improved reusable layouts and styling'),
+(3, 'Low Zhi Quan', 'Implemented job application process', 'Created server-side validation'),
+(4, 'Leong Wei Kin', 'Managed testing and debugging', 'Database testing and debugging');
 
 -- --------------------------------------------------------
 
@@ -71,6 +81,14 @@ CREATE TABLE `jobs` (
   `salary` varchar(50) DEFAULT NULL,
   `requirements` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `jobs`
+--
+
+INSERT INTO `jobs` (`job_ref`, `job_title`, `description`, `salary`, `requirements`) VALUES
+('GOVA1', 'Senior Frontend Developer (Semantic Web)', 'Lead development and enhancement of government web platforms with semantic HTML and accessibility standards.', 'MYR 7,000 – MYR 10,000/month', 'Bachelor degree in IT or Computer Science. Minimum 5 years frontend experience.'),
+('GOVC3', 'Cybersecurity Analyst (Digital Services)', 'Protect government digital services by identifying vulnerabilities and security risks.', 'MYR 6,000 – MYR 9,000/month', 'Bachelor degree in Cybersecurity. Minimum 3 years experience.');
 
 -- --------------------------------------------------------
 
@@ -121,7 +139,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `about`
 --
 ALTER TABLE `about`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `eoi`
