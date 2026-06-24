@@ -16,7 +16,7 @@
         <?php include 'nav.inc'; ?>
     </section>
 
-    <form class="apply-form" method="post" action="https://mercury.swin.edu.au/it000000/formtest.php">
+    <form class="apply-form" method="post" action="http://localhost/group-6-groupprojectwebsite-2/group-6-groupprojectwebsite-2-main/process_eoi.php">
         <h2>PRIUS Online Application Form</h2>
         
         <div class="row-threes">
