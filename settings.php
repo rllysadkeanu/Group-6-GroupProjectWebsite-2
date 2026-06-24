@@ -2,7 +2,7 @@
 $host = "localhost";
 $user = "root";
 $pwd = ""; // Default XAMPP has no password
-$sql_db = "eoi_db"; // Make sure to create this database in phpMyAdmin
+$sql_db = "eoi_database"; // Make sure to create this database in phpMyAdmin
 
 $conn = @mysqli_connect($host, $user, $pwd, $sql_db);
 
